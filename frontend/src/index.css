@@ -1,0 +1,186 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: #080D19;
+    color: #F4F7FC;
+  }
+}
+
+/* Lightweight, restrained keyframes for emergency scenes */
+@keyframes nexusSmokeRise {
+  0% {
+    transform: translateY(4px) scale(0.95);
+    opacity: 0.14;
+  }
+  50% {
+    transform: translateY(-6px) scale(1.06);
+    opacity: 0.34;
+  }
+  100% {
+    transform: translateY(-14px) scale(1.12);
+    opacity: 0.08;
+  }
+}
+
+@keyframes nexusFlame {
+  0%, 100% {
+    transform: scaleY(1) skewX(0deg);
+    opacity: 0.86;
+  }
+  50% {
+    transform: scaleY(1.12) skewX(-2deg);
+    opacity: 1;
+  }
+}
+
+@keyframes nexusFlameAlt {
+  0%, 100% {
+    transform: scaleY(1) skewX(0deg);
+    opacity: 0.82;
+  }
+  50% {
+    transform: scaleY(0.92) skewX(3deg);
+    opacity: 0.98;
+  }
+}
+
+@keyframes nexusWave {
+  0%, 100% {
+    transform: translateX(-6px);
+  }
+  50% {
+    transform: translateX(8px);
+  }
+}
+
+@keyframes nexusWaveSlow {
+  0%, 100% {
+    transform: translateX(6px) translateY(0px);
+  }
+  50% {
+    transform: translateX(-8px) translateY(-2px);
+  }
+}
+
+@keyframes nexusPulseRing {
+  0%, 100% {
+    transform: scale(0.96);
+    opacity: 0.45;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 0.85;
+  }
+}
+
+@keyframes nexusShieldFlow {
+  0% {
+    stroke-dashoffset: 0;
+    opacity: 0.72;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: -40;
+    opacity: 0.72;
+  }
+}
+
+@keyframes nexusCircuitFlow {
+  0% {
+    stroke-dashoffset: 36;
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.95;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0.55;
+  }
+}
+
+@keyframes nexusEcgGlow {
+  0%, 100% {
+    stroke-dashoffset: 28;
+    opacity: 0.65;
+  }
+  50% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+.animate-nexus-smoke {
+  animation: nexusSmokeRise 3.6s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.animate-nexus-flame {
+  animation: nexusFlame 1.8s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
+.animate-nexus-flame-alt {
+  animation: nexusFlameAlt 1.45s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
+.animate-nexus-wave {
+  animation: nexusWave 4.2s ease-in-out infinite;
+}
+
+.animate-nexus-wave-slow {
+  animation: nexusWaveSlow 5.4s ease-in-out infinite;
+}
+
+.animate-nexus-pulse {
+  animation: nexusPulseRing 2.8s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.animate-nexus-shield {
+  animation: nexusShieldFlow 3.2s linear infinite;
+}
+
+.animate-nexus-circuit {
+  animation: nexusCircuitFlow 2.6s linear infinite;
+}
+
+.animate-nexus-ecg {
+  animation: nexusEcgGlow 2.4s ease-in-out infinite;
+}
+
+/* Respect accessibility preference for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .animate-nexus-smoke,
+  .animate-nexus-flame,
+  .animate-nexus-flame-alt,
+  .animate-nexus-wave,
+  .animate-nexus-wave-slow,
+  .animate-nexus-pulse,
+  .animate-nexus-shield,
+  .animate-nexus-circuit,
+  .animate-nexus-ecg {
+    animation: none !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+  }
+}
