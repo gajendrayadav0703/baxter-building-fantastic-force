@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, Link } from 'react-router-dom';
-import { Archive, Bell, ChevronDown, Menu, User, X } from 'lucide-react';
+import { Archive, Bell, ChevronDown, LogIn, Menu, User, X } from 'lucide-react';
 
 const NAV_ITEMS = [
   { label: 'Home', to: '/' },
@@ -155,6 +155,15 @@ export default function Navbar() {
                   <Archive className="h-3.5 w-3.5 text-nexus-violet" aria-hidden="true" />
                   Mission Archives
                 </Link>
+                <Link
+                  to="/login"
+                  role="menuitem"
+                  onClick={() => setProfileOpen(false)}
+                  className="mt-1 flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-nexus-text transition-colors hover:bg-nexus-navy hover:text-nexus-cyan focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-cyan"
+                >
+                  <LogIn className="h-3.5 w-3.5 text-nexus-cyan" aria-hidden="true" />
+                  Commander Login
+                </Link>
               </div>
             )}
           </div>
@@ -205,6 +214,13 @@ export default function Navbar() {
               className={linkClassName}
             >
               Mission Archives
+            </NavLink>
+            <NavLink
+              to="/login"
+              onClick={() => setMobileOpen(false)}
+              className={linkClassName}
+            >
+              Commander Login
             </NavLink>
           </div>
         </nav>
