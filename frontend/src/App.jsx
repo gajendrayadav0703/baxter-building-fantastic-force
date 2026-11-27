@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import CommandShell from './components/layout/CommandShell';
 import HomePage from './pages/HomePage';
+import LoginPage from './pages/LoginPage';
 import NexusSectionPage from './pages/NexusSectionPage';
 
 export default function App() {
@@ -66,6 +67,17 @@ export default function App() {
                 title="Mission Archives"
                 subtitle="Historical archive of completed, aborted, and past operations."
                 moduleStage="Archives Module"
+              />
+            }
+          />
+          <Route path="/login" element={<LoginPage />} />
+          <Route
+            path="/register"
+            element={
+              <NexusSectionPage
+                title="Commander Registration"
+                subtitle="Create a new Commander or Operator account to access Nexus Command Center."
+                moduleStage="Module 1 · Auth"
               />
             }
           />
