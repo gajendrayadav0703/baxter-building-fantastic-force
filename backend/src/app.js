@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import { getDbStatusLabel } from './config/db.js';
 import { env } from './config/env.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
+import authRoutes from './routes/authRoutes.js';
 
 export function createApp() {
   const app = express();
@@ -29,6 +30,8 @@ export function createApp() {
       timestamp: new Date().toISOString(),
     });
   });
+
+  app.use('/api/auth', authRoutes);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

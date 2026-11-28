@@ -9,6 +9,7 @@ const envSchema = z.object({
   MONGO_URI: z.string().min(1, 'MONGO_URI is required'),
   CLIENT_URL: z.string().url().default('http://localhost:5173'),
   JWT_SECRET: z.string().min(16, 'JWT_SECRET must be at least 16 characters'),
+  JWT_EXPIRES_IN: z.string().min(1).default('7d'),
 });
 
 const parsed = envSchema.safeParse(process.env);

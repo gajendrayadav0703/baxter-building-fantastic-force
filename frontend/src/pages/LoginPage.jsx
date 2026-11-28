@@ -2,29 +2,41 @@ import { useState } from 'react';
 import {
   AlertCircle,
   ArrowLeft,
-  CheckCircle2,
   Eye,
   EyeOff,
+  Loader2,
   Lock,
   LogIn,
   ShieldCheck,
   User,
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import SkylineBackdrop from '../components/home/SkylineBackdrop';
+import { useAuth } from '../context/AuthContext';
 
 /**
- * Responsive Cyberpunk Nexus Login Page for the Baxter Building Command Center.
+ * Responsive Cyberpunk Nexus Login Page connected to the backend JWT auth API.
  */
 export default function LoginPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { login, isAuthenticated, sessionNotice, clearSessionNotice } = useAuth();
+
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showForgotNotice, setShowForgotNotice] = useState(false);
   const [errors, setErrors] = useState({});
-  const [statusMessage, setStatusMessage] = useState(null);
+  const [serverError, setServerError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (event) => {
+  const redirectTo = location.state?.from?.pathname || '/';
+
+  if (isAuthenticated) {
+    return <Navigate to={redirectTo} replace />;
+  }
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const nextErrors = {};
 
@@ -37,15 +49,35 @@ export default function LoginPage() {
 
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
-      setStatusMessage(null);
+      setServerError('');
       return;
     }
 
     setErrors({});
-    setStatusMessage({
-      type: 'info',
-      text: `Ready to authenticate "${identifier.trim()}". Backend JWT login unlocks in Module 1.`,
-    });
+    setServerError('');
+    clearSessionNotice();
+    setIsSubmitting(true);
+
+    try {
+      await login({
+        identifier: identifier.trim(),
+        password,
+      });
+      navigate(redirectTo, { replace: true });
+    } catch (error) {
+      if (error.errors) {
+        const mapped = {};
+        for (const [key, messages] of Object.entries(error.errors)) {
+          if (Array.isArray(messages) && messages[0]) {
+            mapped[key] = messages[0];
+          }
+        }
+        setErrors(mapped);
+      }
+      setServerError(error.message || 'Sign in failed. Please check your credentials.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -83,6 +115,26 @@ export default function LoginPage() {
             </p>
           </div>
 
+          {sessionNotice && !serverError && (
+            <div
+              role="status"
+              className="mt-5 flex items-start gap-2 rounded-xl border border-nexus-violet/45 bg-nexus-violet/10 px-3.5 py-2.5 text-xs font-medium text-nexus-text"
+            >
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-nexus-violet" aria-hidden="true" />
+              <span>{sessionNotice}</span>
+            </div>
+          )}
+
+          {serverError && (
+            <div
+              role="alert"
+              className="mt-5 flex items-start gap-2 rounded-xl border border-nexus-orange/50 bg-nexus-orange/10 px-3.5 py-2.5 text-xs font-medium text-nexus-orange"
+            >
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+              <span>{serverError}</span>
+            </div>
+          )}
+
           {/* Form */}
           <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-5">
             {/* Email / Username */}
@@ -108,8 +160,9 @@ export default function LoginPage() {
                     if (errors.identifier) {
                       setErrors((prev) => ({ ...prev, identifier: undefined }));
                     }
+                    if (serverError) setServerError('');
                   }}
-                  placeholder="commander@baxter.nexus"
+                  placeholder="commander@baxter.nexus or username"
                   aria-invalid={Boolean(errors.identifier)}
                   aria-describedby={errors.identifier ? 'login-identifier-error' : undefined}
                   className={`w-full rounded-xl border bg-nexus-navy/90 py-2.5 pl-10 pr-4 text-sm text-nexus-text placeholder:text-nexus-muted/60 transition-colors focus:outline-none focus:ring-2 focus:ring-nexus-cyan ${
@@ -164,6 +217,7 @@ export default function LoginPage() {
                     if (errors.password) {
                       setErrors((prev) => ({ ...prev, password: undefined }));
                     }
+                    if (serverError) setServerError('');
                   }}
                   placeholder="Enter your password"
                   aria-invalid={Boolean(errors.password)}
@@ -207,32 +261,28 @@ export default function LoginPage() {
                 role="status"
                 className="rounded-xl border border-nexus-violet/40 bg-nexus-violet/10 px-3.5 py-2.5 text-xs leading-relaxed text-nexus-muted"
               >
-                Password reset will connect to the Nexus Auth service in Module 1. Contact your
-                Lead Commander if you need manual clearance.
-              </div>
-            )}
-
-            {/* Submit feedback */}
-            {statusMessage && (
-              <div
-                role="status"
-                className="flex items-start gap-2 rounded-xl border border-nexus-cyan/40 bg-nexus-cyan/10 px-3.5 py-2.5 text-xs leading-relaxed text-nexus-text"
-              >
-                <CheckCircle2
-                  className="mt-0.5 h-4 w-4 shrink-0 text-nexus-cyan"
-                  aria-hidden="true"
-                />
-                <span>{statusMessage.text}</span>
+                Self-service email password reset is not yet configured. Please contact your Lead
+                Commander to reset your Nexus credentials.
               </div>
             )}
 
             {/* Login Button */}
             <button
               type="submit"
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-nexus-cyan px-4 py-2.5 text-sm font-bold text-nexus-void shadow-nexus-cyan transition-colors hover:bg-nexus-cyan/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-nexus-card"
+              disabled={isSubmitting}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-nexus-cyan px-4 py-2.5 text-sm font-bold text-nexus-void shadow-nexus-cyan transition-colors hover:bg-nexus-cyan/90 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-nexus-card"
             >
-              <LogIn className="h-4 w-4" aria-hidden="true" />
-              Login to Nexus
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                  Signing In...
+                </>
+              ) : (
+                <>
+                  <LogIn className="h-4 w-4" aria-hidden="true" />
+                  Login to Nexus
+                </>
+              )}
             </button>
           </form>
 
@@ -241,7 +291,7 @@ export default function LoginPage() {
             Need Nexus clearance?{' '}
             <Link
               to="/register"
-              className="font-semibold text-nexus-cyan transition-colors hover:text-nexus-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-cyan rounded"
+              className="rounded font-semibold text-nexus-cyan transition-colors hover:text-nexus-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-cyan"
             >
               Sign Up
             </Link>

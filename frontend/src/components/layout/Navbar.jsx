@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { NavLink, Link } from 'react-router-dom';
-import { Archive, Bell, ChevronDown, LogIn, Menu, User, X } from 'lucide-react';
+import { NavLink, Link, useNavigate } from 'react-router-dom';
+import { Archive, Bell, ChevronDown, LogIn, LogOut, Menu, User, UserPlus, X } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 const NAV_ITEMS = [
   { label: 'Home', to: '/' },
@@ -16,10 +17,19 @@ const NAV_ITEMS = [
  * working profile menu, and keyboard Escape support.
  */
 export default function Navbar() {
+  const navigate = useNavigate();
+  const { user, isAuthenticated, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const mobileToggleRef = useRef(null);
   const profileMenuRef = useRef(null);
+
+  const handleLogout = async () => {
+    setProfileOpen(false);
+    setMobileOpen(false);
+    await logout();
+    navigate('/login');
+  };
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -125,7 +135,9 @@ export default function Navbar() {
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-nexus-cyan/15 text-nexus-cyan">
                 <User className="h-3.5 w-3.5" aria-hidden="true" />
               </span>
-              <span>Commander</span>
+              <span className="max-w-[120px] truncate">
+                {isAuthenticated ? user.name : 'Commander'}
+              </span>
               <ChevronDown
                 className={`h-3.5 w-3.5 text-nexus-muted transition-transform duration-200 ${
                   profileOpen ? 'rotate-180' : ''
@@ -141,10 +153,19 @@ export default function Navbar() {
                 className="absolute right-0 mt-2 w-60 rounded-xl border border-white/15 bg-nexus-card p-2 shadow-nexus-card"
               >
                 <div className="border-b border-white/10 px-3 py-2">
-                  <p className="text-xs font-semibold text-nexus-text">Nexus Console</p>
-                  <p className="mt-0.5 text-xs text-nexus-muted">
-                    Stage 1 UI · Auth unlocks in Module 1
-                  </p>
+                  {isAuthenticated ? (
+                    <>
+                      <p className="truncate text-xs font-semibold text-nexus-text">{user.name}</p>
+                      <p className="mt-0.5 truncate text-xs text-nexus-cyan">
+                        @{user.username} · <span className="capitalize">{user.role}</span>
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-xs font-semibold text-nexus-text">Nexus Console</p>
+                      <p className="mt-0.5 text-xs text-nexus-muted">Not signed in</p>
+                    </>
+                  )}
                 </div>
                 <Link
                   to="/mission-archives"
@@ -155,15 +176,38 @@ export default function Navbar() {
                   <Archive className="h-3.5 w-3.5 text-nexus-violet" aria-hidden="true" />
                   Mission Archives
                 </Link>
-                <Link
-                  to="/login"
-                  role="menuitem"
-                  onClick={() => setProfileOpen(false)}
-                  className="mt-1 flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-nexus-text transition-colors hover:bg-nexus-navy hover:text-nexus-cyan focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-cyan"
-                >
-                  <LogIn className="h-3.5 w-3.5 text-nexus-cyan" aria-hidden="true" />
-                  Commander Login
-                </Link>
+                {isAuthenticated ? (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={handleLogout}
+                    className="mt-1 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-medium text-nexus-orange transition-colors hover:bg-nexus-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-cyan"
+                  >
+                    <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
+                    Sign Out
+                  </button>
+                ) : (
+                  <>
+                    <Link
+                      to="/login"
+                      role="menuitem"
+                      onClick={() => setProfileOpen(false)}
+                      className="mt-1 flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-nexus-text transition-colors hover:bg-nexus-navy hover:text-nexus-cyan focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-cyan"
+                    >
+                      <LogIn className="h-3.5 w-3.5 text-nexus-cyan" aria-hidden="true" />
+                      Commander Login
+                    </Link>
+                    <Link
+                      to="/register"
+                      role="menuitem"
+                      onClick={() => setProfileOpen(false)}
+                      className="mt-1 flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-nexus-text transition-colors hover:bg-nexus-navy hover:text-nexus-cyan focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-cyan"
+                    >
+                      <UserPlus className="h-3.5 w-3.5 text-nexus-green" aria-hidden="true" />
+                      Sign Up
+                    </Link>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -215,13 +259,33 @@ export default function Navbar() {
             >
               Mission Archives
             </NavLink>
-            <NavLink
-              to="/login"
-              onClick={() => setMobileOpen(false)}
-              className={linkClassName}
-            >
-              Commander Login
-            </NavLink>
+            {isAuthenticated ? (
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="flex items-center gap-2 rounded-lg border border-transparent px-3 py-2 text-left text-sm font-medium text-nexus-orange transition-colors hover:bg-nexus-card/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-cyan"
+              >
+                <LogOut className="h-4 w-4" aria-hidden="true" />
+                Sign Out ({user.name})
+              </button>
+            ) : (
+              <>
+                <NavLink
+                  to="/login"
+                  onClick={() => setMobileOpen(false)}
+                  className={linkClassName}
+                >
+                  Commander Login
+                </NavLink>
+                <NavLink
+                  to="/register"
+                  onClick={() => setMobileOpen(false)}
+                  className={linkClassName}
+                >
+                  Sign Up
+                </NavLink>
+              </>
+            )}
           </div>
         </nav>
       )}
